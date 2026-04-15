@@ -19,4 +19,6 @@ class Product(Base):
     seller_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)  # New
 
     category: Mapped["Category"] = relationship("Category", back_populates="products")
-    seller = relationship("User", back_populates="products")  # New
+    seller = relationship("User", back_populates="products")
+    review: Mapped[list["Review"]] = relationship("Review", 
+                                                  back_populates="product")
