@@ -3,13 +3,13 @@ from sqlalchemy.orm import sessionmaker
 from app.config import PG_USER, PG_PASSWORD
 
 # Строка подключения для SQLite
-DATABASE_URL = "sqlite:///ecommerce.db"
+#DATABASE_URL = "sqlite:///ecommerce.db"
 
 # Создаём Engine
-engine = create_engine(DATABASE_URL, echo=True)
+#engine = create_engine(DATABASE_URL, echo=True)
 
 # Настраиваем фабрику сеансов
-SessionLocal = sessionmaker(bind=engine)
+#SessionLocal = sessionmaker(bind=engine)
 
 # --------------- Асинхронное подключение к PostgreSQL -------------------------
 
