@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import String, Boolean, Float, Integer, Text, DateTime
+from sqlalchemy import Boolean, Integer, DateTime, CheckConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey
 
@@ -16,12 +16,19 @@ class Review(Base):
                                          ForeignKey("users.id"))
     product_id: Mapped[int] = mapped_column(Integer,
                                             ForeignKey("products.id"))
-    comment: Mapped[str | None] = mapped_column(None,
-                                                nullable=True)
-    comment_date: Mapped[datetime] = mapped_column(DateTime, 
-                                                   default=datetime.now)
-    grade: Mapped[int] = mapped_column(Integer)
+    comment: Mapped[str | None]                                                
+    comment_date: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, 
+        server_default=func.now()
+        )
+    grade: Mapped[int] = mapped_column(
+        Integer, 
+        CheckConstraint(sqltext='((grade>=1) AND (grade<=5))', 
+                        name='CONSTRAINT_chk_grade_in_range')
+        )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-
-    user: Mapped["User"] = relationship("User", back_populates="review")
-    product: Mapped["Product"] = relationship("Product", back_populates="review")
+    
+    user: Mapped["User"] = relationship("User",
+                                        back_populates="reviews")
+    product: Mapped["Product"] = relationship("Product",
+                                              back_populates="reviews")

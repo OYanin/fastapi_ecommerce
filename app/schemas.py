@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import Optional
 
@@ -53,6 +54,7 @@ class Product(BaseModel):
     stock: int = Field(..., description="Количество товара на складе")
     category_id: int = Field(..., description="ID категории")
     is_active: bool = Field(..., description="Активность товара")
+    rating: float = Field(default=0.0, description="Рейтинг товара на основе отзывов")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -69,4 +71,22 @@ class User(BaseModel):
     email: EmailStr
     is_active: bool
     role: str
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ReviewCreate(BaseModel):
+    user_id: int = Field(..., description="ID покупателя")
+    product_id: int = Field(..., description="ID товара")
+    comment: Optional[str] = Field(None, description="Текст отзыва")
+    grade: int = Field(..., description="Оценка товара 1..5")
+
+
+class Review(BaseModel):
+    id: int
+    user_id: int = Field(..., description="ID покупателя")
+    product_id: int = Field(..., description="ID товара")
+    comment: Optional[str] = Field(None, description="Текст отзыва")
+    comment_date: Optional[datetime] = Field(None, description="Дата создания отзыва")
+    grade: int = Field(..., description="Оценка товара от 1 до 5")
+    is_active: bool = Field(default=True, description="Активность отзыва")
     model_config = ConfigDict(from_attributes=True)

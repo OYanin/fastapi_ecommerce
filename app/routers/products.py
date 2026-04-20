@@ -4,9 +4,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, update
 
 from app.auth import get_current_seller
+from app.models.reviews import Review as ReviewModel
 from app.models.products import Product as ProductModel
 from app.models.categories import Category as CategoryModel
 from app.schemas import Product as ProductSchema, ProductCreate
+from app.schemas import Review as ReviewSchema
 from app.models.users import User as UserModel
 from app.db_depends import get_db, get_async_db
 
@@ -15,7 +17,7 @@ router = APIRouter(
     prefix="/products",
     tags=["products"],
 )
-
+    
 
 @router.get("/", response_model=list[ProductSchema])
 async def get_all_products(db: AsyncSession = Depends(get_async_db)):
@@ -66,6 +68,23 @@ async def get_products_by_category(category_id: int, db: AsyncSession = Depends(
     return product_result.all()
 
 
+@router.get("/{product_id}/reviews", response_model=list[ReviewSchema])
+async def get_all_reviews_by_product(product_id: int,
+                                     db: AsyncSession = Depends(get_async_db)):
+    """
+    Возвращает список активных отзывов о товаре.
+    """
+    result = await db.scalars(select(ProductModel).where(ProductModel.is_active,
+                                                         ProductModel.id == product_id))
+    product = result.first
+    if product:
+        result = await db.scalars(select(ReviewModel).where(ReviewModel.is_active,
+                                                            ReviewModel.product_id == product_id))
+        return result.all()
+
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="The product does not exist or is not active")
+
+
 @router.get("/{product_id}", response_model=ProductSchema)
 async def get_product(product_id: int, db: AsyncSession = Depends(get_async_db)):
     """
@@ -111,6 +130,7 @@ async def update_product(
     await db.refresh(db_product)  # Для консистентности данных
     return db_product
 
+
 @router.delete("/{product_id}", response_model=ProductSchema)
 async def delete_product(
     product_id: int,
@@ -134,5 +154,3 @@ async def delete_product(
     await db.commit()
     await db.refresh(product)  # Для возврата is_active = False
     return product
-
-
